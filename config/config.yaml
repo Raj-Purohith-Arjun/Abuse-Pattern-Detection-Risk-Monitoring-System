@@ -1,0 +1,63 @@
+---
+# ============================================================
+# Abuse Pattern Detection & Risk Monitoring System - Config
+# ============================================================
+
+database:
+  host: "localhost"
+  port: 5432
+  name: "abuse_monitoring_db"
+  user: "db_user"
+  password: "REPLACE_WITH_SECRET"   # inject via env: DB_PASSWORD
+  pool_size: 10
+  max_overflow: 20
+  connect_timeout: 10
+
+anomaly_detection:
+  zscore_threshold: 3.0          # standard deviations above mean → anomaly
+  contamination: 0.05            # expected fraction of outliers (IsolationForest)
+  risk_score_high: 70            # scores ≥ this are high-risk (0-100 scale)
+  risk_score_medium: 40          # scores ≥ this are medium-risk
+  target_fpr: 0.01               # target false-positive rate for threshold calibration
+  isolation_forest_weight: 0.55  # weight of IsolationForest score in combined risk
+  zscore_weight: 0.45            # weight of z-score signal in combined risk
+  random_state: 42
+
+feature_engineering:
+  rolling_windows:               # minutes - used for action-frequency aggregations
+    - 5
+    - 15
+    - 60
+  session_gap_minutes: 30        # idle gap that defines a new session boundary
+  min_events_for_entropy: 3      # minimum events before computing IP entropy
+  device_reuse_top_n: 10         # top-N most-shared devices to consider
+  velocity_cap: 1000.0           # cap events-per-second to suppress outlier inflation
+
+alerting:
+  webhook_url: "https://hooks.example.com/REPLACE_WITH_TOKEN"
+  rate_limit: 60                 # maximum alerts per minute across all channels
+  dedup_window: 300              # seconds - suppress duplicate alerts for same entity
+  retry_attempts: 3
+  retry_backoff_seconds: 5
+  channels:
+    - type: "webhook"
+      enabled: true
+    - type: "email"
+      enabled: false
+      recipients: []
+
+model:
+  model_version: "1.0.0"
+  retrain_interval: 86400        # seconds (24 h)
+  model_store_path: "models/"
+  artifact_name: "anomaly_pipeline"
+  n_estimators: 200              # IsolationForest trees
+  max_samples: "auto"
+  n_jobs: -1                     # use all available CPU cores
+
+logging:
+  level: "INFO"
+  format: "%(asctime)s | %(levelname)-8s | %(name)s | %(message)s"
+  file: "logs/pipeline.log"
+  max_bytes: 10485760            # 10 MB
+  backup_count: 5

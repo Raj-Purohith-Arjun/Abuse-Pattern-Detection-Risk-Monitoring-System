@@ -27,6 +27,9 @@ import logging
 from pathlib import Path
 from typing import Any
 
+import matplotlib
+matplotlib.use("Agg")  # non-interactive backend; safe in server environments
+import matplotlib.pyplot as plt
 import numpy as np
 import yaml
 from sklearn.metrics import (
@@ -35,10 +38,6 @@ from sklearn.metrics import (
     roc_auc_score,
     average_precision_score,
 )
-
-import matplotlib
-matplotlib.use("Agg")  # non-interactive backend; safe in server environments
-import matplotlib.pyplot as plt  # noqa: E402
 
 logger = logging.getLogger(__name__)
 
