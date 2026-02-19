@@ -1,0 +1,55 @@
+version: "3.9"
+# NOTE: This file is for local development only.
+# For production, override DB_PASSWORD (and all secrets) via a .env file
+# or your secrets manager — never commit real credentials to source control.
+
+services:
+  # -----------------------------------------------------------------------
+  # Application service
+  # -----------------------------------------------------------------------
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: abuse_detection_app
+    ports:
+      - "8080:8080"
+    volumes:
+      - ./config:/app/config:ro
+      - ./logs:/app/logs
+    environment:
+      - DB_HOST=postgres
+      - DB_PORT=5432
+      - DB_NAME=${DB_NAME:-abuse_monitoring_db}
+      - DB_USER=${DB_USER:-db_user}
+      - DB_PASSWORD=${DB_PASSWORD:-changeme}
+    depends_on:
+      postgres:
+        condition: service_healthy
+    restart: unless-stopped
+
+  # -----------------------------------------------------------------------
+  # PostgreSQL database service
+  # -----------------------------------------------------------------------
+  postgres:
+    image: postgres:15
+    container_name: abuse_detection_postgres
+    environment:
+      POSTGRES_DB: ${DB_NAME:-abuse_monitoring_db}
+      POSTGRES_USER: ${DB_USER:-db_user}
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-changeme}
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./sql/schema.sql:/docker-entrypoint-initdb.d/01_schema.sql:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USER:-db_user} -d ${DB_NAME:-abuse_monitoring_db}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 20s
+    restart: unless-stopped
+
+volumes:
+  postgres_data:
