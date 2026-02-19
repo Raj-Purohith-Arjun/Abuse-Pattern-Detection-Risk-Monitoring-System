@@ -33,8 +33,7 @@ models/
 *.joblib
 
 # Log files
-logs/*.log
-logs/*.log.*
+logs/
 
 # IDE / editor
 .idea/
