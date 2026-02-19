@@ -1141,7 +1141,7 @@ ORDER BY MIN(up.account_age_days);
 
         spec: dict[str, Any] = {
             "schema_version": "1.0.0",
-            "generated_at": datetime.datetime.utcnow().strftime(
+            "generated_at": datetime.datetime.now(datetime.timezone.utc).strftime(
                 "%Y-%m-%dT%H:%M:%SZ"
             ),
             "executive_metrics": self.executive_overview_metrics(),
