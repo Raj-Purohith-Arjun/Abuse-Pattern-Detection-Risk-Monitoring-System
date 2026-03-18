@@ -201,7 +201,6 @@ class AbuseClusterDetector:
             shared = grouped[grouped["users"].apply(len) >= 2]
 
             for _, row in shared.iterrows():
-                signal_val = row[signal_col]
                 users = list(row["users"])
                 # Timestamps per user for this signal value
                 ts_map: dict[Any, pd.Series] = {
@@ -463,7 +462,7 @@ class AbuseClusterDetector:
                         "user_id": user_id,
                         "ip_address": random.choice(ips),
                         "device_id": random.choice(devices),
-                        "session_id": f"sess_{user_id}_{random.randint(1,5)}",
+                        "session_id": f"sess_{user_id}_{random.randint(1, 5)}",
                         "action": random.choice(actions),
                         "timestamp": ts,
                         "enforced": int(random.random() < 0.05),
